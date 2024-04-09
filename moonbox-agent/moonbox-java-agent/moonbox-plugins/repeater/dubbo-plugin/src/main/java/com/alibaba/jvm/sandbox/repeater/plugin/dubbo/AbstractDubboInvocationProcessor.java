@@ -3,11 +3,6 @@ This code comes from the jvm-sandbox-repeater(link:https://github.com/alibaba/jv
  */
 package com.alibaba.jvm.sandbox.repeater.plugin.dubbo;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.lang3.reflect.MethodUtils;
-
 import com.alibaba.jvm.sandbox.api.event.BeforeEvent;
 import com.alibaba.jvm.sandbox.api.event.Event;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api.DefaultInvocationProcessor;
@@ -16,6 +11,10 @@ import com.alibaba.jvm.sandbox.repeater.plugin.utils.ParameterTypesUtil;
 import com.vivo.internet.moonbox.common.api.model.Identity;
 import com.vivo.internet.moonbox.common.api.model.Invocation;
 import com.vivo.internet.moonbox.common.api.model.InvokeType;
+import org.apache.commons.lang3.reflect.MethodUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link AbstractDubboInvocationProcessor}
@@ -30,6 +29,8 @@ import com.vivo.internet.moonbox.common.api.model.InvokeType;
 abstract class AbstractDubboInvocationProcessor extends DefaultInvocationProcessor {
 
     protected static final String ON_RESPONSE = "onResponse";
+
+    protected static final String ON_COMPLETE = "onComplete";
 
     protected static final String INVOKE = "invoke";
 
@@ -48,6 +49,11 @@ abstract class AbstractDubboInvocationProcessor extends DefaultInvocationProcess
             // onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {}
             invoker = event.argumentArray[1];
             invocation = event.argumentArray[2];
+        } else if (ON_COMPLETE.equals(event.javaMethodName)) {
+            // for record identity assemble
+            // com.alibaba.dubbo
+            invoker = event.argumentArray[2];
+            invocation = event.argumentArray[3];
         } else {
             // for repeater identity assemble
             // invoke(Invoker<?> invoker, Invocation invocation)
@@ -77,6 +83,10 @@ abstract class AbstractDubboInvocationProcessor extends DefaultInvocationProcess
             // for record parameter assemble
             // onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {}
             invocation = event.argumentArray[2];
+        } else if (ON_COMPLETE.equals(event.javaMethodName)) {
+            // for record parameter assemble
+            // com.alibaba.dubbo
+            invocation = event.argumentArray[3];
         } else {
             // for repeater parameter assemble
             // invoke(Invoker<?> invoker, Invocation invocation)
@@ -97,6 +107,29 @@ abstract class AbstractDubboInvocationProcessor extends DefaultInvocationProcess
         try {
             Object dubboInvocation = event.argumentArray[1];
             Object response = invocation.getResponse();
+
+            System.out.println("invocation: " + invocation.toString());
+            System.out.println("event.target:" + event.target.getClass());
+            System.out.println("event: " + event);
+
+
+            if ("com.alibaba.dubbo.rpc.filter.ConsumerContextFilter".equals(event.javaClassName) ||
+                    "com.alibaba.dubbo.rpc.filter.ContextFilter".equals(event.javaClassName)) {
+
+                /**
+                 * [localhost][patrol][2024-04-09 15:39:10.210][ERROR][2118][io-18000-exec-8][c.a.j.s.r.p.c.u.MoonboxLogUtils         ] : [][][]error occurred when assemble dubbo mock response
+                 * java.lang.NoSuchMethodException: No such accessible method: getFutureResult() on object: java.lang.Class
+                 */
+//                Class<?> asyncRpcResultClass = Class.forName("com.alibaba.dubbo.rpc.AsyncRpcResult");
+//                asyncRpcResultClass.getDeclaredMethod("getFutureResult").setAccessible(true);
+
+                /**
+                 * 报错同上（但是两种方式下，api/fresh/activity/queryGoodsList/正常的业务dubbo子调用是mock成功的）
+                 */
+                Class<?> asyncRpcResultClass = event.javaClassLoader.loadClass("com.alibaba.dubbo.rpc.AsyncRpcResult");
+                return MethodUtils.invokeMethod(asyncRpcResultClass,"getResultFuture");
+            }
+
             Class<?> aClass = event.javaClassLoader.loadClass("org.apache.dubbo.rpc.AsyncRpcResult");
             // 调用AsyncRpcResult#newDefaultAsyncResult返回;
             return MethodUtils.invokeStaticMethod(aClass, "newDefaultAsyncResult",

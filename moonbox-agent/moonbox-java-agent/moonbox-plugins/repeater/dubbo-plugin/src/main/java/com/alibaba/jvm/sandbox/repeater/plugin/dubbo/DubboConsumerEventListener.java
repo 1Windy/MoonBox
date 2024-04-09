@@ -26,7 +26,8 @@ public class DubboConsumerEventListener extends DubboEventListener {
 
     @Override
     protected void doBefore(BeforeEvent event) throws ProcessControlException {
-        if (event.javaClassName.equals("org.apache.dubbo.rpc.filter.ConsumerContextFilter")
+        if ((event.javaClassName.equals("org.apache.dubbo.rpc.filter.ConsumerContextFilter")
+                || event.javaClassName.equals(("com.alibaba.dubbo.rpc.filter.ConsumerContextFilter")))
                 && event.javaMethodName.contains("invoke")
                 && !MoonboxRepeatCache.isRepeatFlow(Tracer.getTraceId())) {
             // ConsumerContextFilter中仅记录开始时间

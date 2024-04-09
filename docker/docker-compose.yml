@@ -46,23 +46,23 @@ services:
       - 9301:9300
     restart: always
 
-#  moonbox-server:
-#    container_name: moonbox-server
-#    build:
-#      context: ./server
-#    ports:
-#      - 8081:8080
-#    restart: always
-#    depends_on:
-#      - moonbox-mysql
-#      - moonbox-elasticsearch
-#
-#  moonbox-web:
-#    container_name: moonbox-web
-#    build:
-#      context: ./web
-#    ports:
-#      - 9999:9999
-#    restart: always
-#    depends_on:
-#      - moonbox-server
+  moonbox-server:
+    container_name: moonbox-server
+    build:
+      context: ./server
+    ports:
+      - 8081:8080
+    restart: always
+    depends_on:
+      - moonbox-mysql
+      - moonbox-elasticsearch
+
+  moonbox-web:
+    container_name: moonbox-web
+    build:
+      context: ./web
+    ports:
+      - 9999:9999
+    restart: always
+    depends_on:
+      - moonbox-server

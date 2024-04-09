@@ -38,7 +38,14 @@ public class DubboProviderPlugin extends AbstractInvokePluginAdapter {
         EnhanceModel invoke = EnhanceModel.builder().classPattern("org.apache.dubbo.rpc.filter.ContextFilter")
                 .methodPatterns(EnhanceModel.MethodPattern.transform("invoke"))
                 .watchTypes(Event.Type.BEFORE, Event.Type.THROWS).build();
-        return Lists.newArrayList(invoke, onResponse);
+
+        /**
+         * com.alibaba.dubbo
+         */
+        EnhanceModel invoke1 = EnhanceModel.builder().classPattern("com.alibaba.dubbo.rpc.filter.ContextFilter")
+                .methodPatterns(EnhanceModel.MethodPattern.transform("invoke"))
+                .watchTypes(Event.Type.BEFORE, Event.Type.THROWS).build();
+        return Lists.newArrayList(invoke, onResponse, invoke1);
     }
 
     @Override
