@@ -125,6 +125,7 @@ abstract class AbstractDubboInvocationProcessor extends DefaultInvocationProcess
 
                 /**
                  * 报错同上（但是两种方式下，api/fresh/activity/queryGoodsList/正常的业务dubbo子调用是mock成功的）
+                 * /api/dubbo/generic泛化调用的回放子调用是mock失败的, 这应该和泛化调用实现的fastjson序列化方式有关，需要额外处理（类似Arex）
                  */
                 Class<?> asyncRpcResultClass = event.javaClassLoader.loadClass("com.alibaba.dubbo.rpc.AsyncRpcResult");
                 return MethodUtils.invokeMethod(asyncRpcResultClass,"getResultFuture");
