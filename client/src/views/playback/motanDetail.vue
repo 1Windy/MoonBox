@@ -434,7 +434,7 @@ limitations under the License.
         </el-dialog>
       </el-tab-pane>
       <el-tab-pane label="motan流量详情" name="third">
-        <v-motan-flow :traceId="recordTraceId" :taskRunId="recordTaskRunId" :closeType="2" :key="recordTraceId">
+        <v-motan-flow:traceId="recordTraceId" :taskRunId="recordTaskRunId" :closeType="2" :key="recordTraceId">
         </v-motan-flow>
       </el-tab-pane>
     </el-tabs>
@@ -575,7 +575,7 @@ export default {
           if (res.data.length == 0) {
             params.fieldPath = path
             if (diffScope === 2) {
-              this.executeIgnore()
+              this.executeIgnore() 
             }
           } else {
             this.dialogIgnoreVisible = true

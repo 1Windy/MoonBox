@@ -3,10 +3,10 @@ This code comes from the jvm-sandbox-repeater(link:https://github.com/alibaba/jv
  */
 package com.alibaba.jvm.sandbox.repeater.plugin.domain;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import com.vivo.internet.moonbox.common.api.model.*;
-
-import java.util.List;
 
 /**
  * {@link RepeaterConfig} 基础配置项

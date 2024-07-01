@@ -21,7 +21,7 @@ limitations under the License.
         <el-radio v-if="showEnv('dev')" label="dev">开发环境</el-radio>
       </el-radio-group>
       <tool-tip icon="el-icon-question" iStyle="margin-left: 10px;" placement="right">
-        <template v-slot:inner>本地环境：MoonBox在本地启动调试<br/> 开发环境：MoonBox在开发环境部署</template>
+        <template v-slot:inner>本地环境：月光宝盒在本地启动调试<br/> 开发环境：月光宝盒在开发环境部署</template>
       </tool-tip>
     </el-form-item>
     <el-form-item label="请输入ip：" prop="hostIp">

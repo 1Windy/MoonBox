@@ -72,7 +72,7 @@ public class MoonboxRepeaterTask {
             new ThreadPoolExecutor.DiscardPolicy());
 
     public synchronized void start() {
-        log.info("Moonbox Repeater Tthis.configInfoask Start...");
+        log.info("Moonbox Repeater Task Start...");
         if (initialize.compareAndSet(false, true)) {
             threadPoolExecutor.execute(() -> {
                 try {

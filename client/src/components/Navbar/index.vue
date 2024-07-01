@@ -16,10 +16,11 @@ limitations under the License.
 <template>
   <div class="navbar">
     <div v-if="sidebar.opened" class="logo big">
-      <div>MoonBox</div>
+      <div>月光宝盒</div>
     </div>
     <div v-else class="logo small">
-      <div>MoonBox</div>
+      <div>月光</div> 
+      <div>宝盒</div>
     </div>
     <div class="tabs">
       <multiPageTabs />

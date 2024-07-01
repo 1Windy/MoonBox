@@ -51,7 +51,7 @@
           "type": "text"
         },
         "responseDiffResult": {
-          "type": "text"
+          "type": "keyword"
         },
         "replayHost": {
           "type": "keyword"

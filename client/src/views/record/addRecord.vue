@@ -792,7 +792,7 @@ export default {
           if (this.ruleForm.javaRecordInterfaces && this.ruleForm.javaRecordInterfaces.length) {
             this.ruleForm.javaRecordInterfaces.forEach(item => {
               item.methodPatterns = item.methodPatterns.split(';')
-            })
+            }) 
           }
           templateConfig.javaRecordInterfaces = this.ruleForm.javaRecordInterfaces
           if (templateConfig.dubboRecordInterfaces.length === 0 &&templateConfig.motanRecordInterfaces.length === 0 && templateConfig.httpRecordInterfaces.length === 0 && templateConfig.javaRecordInterfaces.length === 0) return this.$message.warning('至少需要有一条入口流量采集配置')
