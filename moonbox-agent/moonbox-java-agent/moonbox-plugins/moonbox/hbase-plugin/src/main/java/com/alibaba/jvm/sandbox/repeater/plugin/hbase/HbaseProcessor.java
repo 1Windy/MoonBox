@@ -17,21 +17,22 @@ package com.alibaba.jvm.sandbox.repeater.plugin.hbase;
 
 import com.alibaba.jvm.sandbox.api.event.BeforeEvent;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api.DefaultInvocationProcessor;
-import com.alibaba.jvm.sandbox.repeater.plugin.domain.Identity;
-import com.alibaba.jvm.sandbox.repeater.plugin.domain.Invocation;
-import com.alibaba.jvm.sandbox.repeater.plugin.domain.InvokeType;
-import com.alibaba.jvm.sandbox.repeater.plugin.utils.Bytes;
 import com.alibaba.jvm.sandbox.repeater.plugin.utils.ParameterTypesUtil;
+
+import com.vivo.internet.moonbox.common.api.model.Identity;
+import com.vivo.internet.moonbox.common.api.model.Invocation;
+import com.vivo.internet.moonbox.common.api.model.InvokeType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 
 /**
  * hbase 处理器
@@ -54,15 +55,15 @@ class HbaseProcessor extends DefaultInvocationProcessor {
         try {
             Object hTable = event.target;
             Object table = FieldUtils.readField(hTable, "tableName", true);
-            String tableName = (String) MethodUtils.invokeMethod(table, "getNameAsString");
+            String tableName = (String)MethodUtils.invokeMethod(table, "getNameAsString");
             String operation = event.javaMethodName;
-            return new Identity(InvokeType.HBASE.name(), tableName, operation + ParameterTypesUtil.getTypesStrByObjects(event.argumentArray), null);
+            return new Identity(InvokeType.HBASE.name(), tableName,
+                operation + ParameterTypesUtil.getTypesStrByObjects(event.argumentArray), null);
         } catch (Exception e) {
             log.error("hbaseProcessor-assembleIdentity failed,event:{}", event, e);
             return new Identity(InvokeType.HBASE.name(), "unknown" + ":" + "unknown", "unknown", null);
         }
     }
-
 
     /**
      * 组装请求参数
@@ -77,22 +78,23 @@ class HbaseProcessor extends DefaultInvocationProcessor {
         }
         Object argument = event.argumentArray[0];
         if (argument instanceof List) {
-            List<?> list = (List<?>) argument;
-            List<?> requests = list.stream().map((Function<Object, Object>) this::assembleRequest).collect(Collectors.toList());
+            List<?> list = (List<?>)argument;
+            List<?> requests = list.stream().map((Function<Object, Object>)this::assembleRequest).collect(
+                Collectors.toList());
             if (event.javaMethodName.contains("batch")) {
-                return new Object[]{requests, event.argumentArray[1]};
+                return new Object[] {requests, event.argumentArray[1]};
             } else {
-                return new Object[]{requests};
+                return new Object[] {requests};
             }
         } else {
-            return new Object[]{assembleRequest(argument)};
+            return new Object[] {assembleRequest(argument)};
         }
     }
 
     /**
      * 组装模拟响应
      *
-     * @param event 前置事件对象
+     * @param event      前置事件对象
      * @param invocation 调用对象
      * @return 组装后的模拟响应，如果uri包含"batch"则返回null，否则返回调用对象的响应结果
      */
@@ -100,8 +102,8 @@ class HbaseProcessor extends DefaultInvocationProcessor {
     public Object assembleMockResponse(BeforeEvent event, Invocation invocation) {
         String uri = invocation.getIdentity().getUri();
         if (uri.contains("batch")) {
-            Object[] recordResults = (Object[]) invocation.getRequest()[1];
-            Object[] objects = (Object[]) event.argumentArray[1];
+            Object[] recordResults = (Object[])invocation.getRequest()[1];
+            Object[] objects = (Object[])event.argumentArray[1];
             System.arraycopy(recordResults, 0, objects, 0, objects.length);
             return null;
         }
@@ -113,35 +115,35 @@ class HbaseProcessor extends DefaultInvocationProcessor {
         return false;
     }
 
-
     /**
      * 组装请求参数
      *
      * @param data 请求数据对象
      * @return 组装好的请求参数Map，包含row和familyMap两个键值对，其中familyMap是一个嵌套的Map结构，
-     *         key为列族名称，value为该列族下所有列的键值对。
+     * key为列族名称，value为该列族下所有列的键值对。
      */
     @SuppressWarnings("unchecked")
     private Map<String, Object> assembleRequest(Object data) {
         try {
             Map<String, Object> getReq = new HashMap<>();
-            byte[] row = (byte[]) FieldUtils.readField(data, "row", true);
-            Map<byte[], List<Object>> familyMap = (Map<byte[], List<Object>>) FieldUtils.readField(data, "familyMap", true);
+            byte[] row = (byte[])FieldUtils.readField(data, "row", true);
+            Map<byte[], List<Object>> familyMap = (Map<byte[], List<Object>>)FieldUtils.readField(data, "familyMap",
+                true);
             Map<String, Map<String, String>> familyQualifierValueMap = new HashMap<>();
             if (familyMap != null && !familyMap.isEmpty()) {
                 familyMap.forEach((bytes, objects) -> {
                     Map<String, String> qualifierValueMap = new HashMap<>();
-                    familyQualifierValueMap.put(Bytes.toString(bytes), qualifierValueMap);
+                    familyQualifierValueMap.put(hBaseToString(bytes), qualifierValueMap);
                     if (objects != null && !objects.isEmpty()) {
                         objects.forEach(object -> {
                             try {
-                                int qualifierOffset = (int) MethodUtils.invokeMethod(object, "getQualifierOffset");
-                                int qualifierLength = (int) MethodUtils.invokeMethod(object, "getQualifierLength");
-                                int valueOffset = (int) MethodUtils.invokeMethod(object, "getValueOffset");
-                                int valueLength = (int) MethodUtils.invokeMethod(object, "getValueLength");
-                                byte[] value = (byte[]) MethodUtils.invokeMethod(object, "getValueArray");
-                                qualifierValueMap.put(Bytes.toString(value, qualifierOffset, qualifierLength),
-                                        Bytes.toString(value, valueOffset, valueLength));
+                                int qualifierOffset = (int)MethodUtils.invokeMethod(object, "getQualifierOffset");
+                                int qualifierLength = (int)MethodUtils.invokeMethod(object, "getQualifierLength");
+                                int valueOffset = (int)MethodUtils.invokeMethod(object, "getValueOffset");
+                                int valueLength = (int)MethodUtils.invokeMethod(object, "getValueLength");
+                                byte[] value = (byte[])MethodUtils.invokeMethod(object, "getValueArray");
+                                qualifierValueMap.put(hBaseToString(value, qualifierOffset, qualifierLength),
+                                    hBaseToString(value, valueOffset, valueLength));
                             } catch (Exception ignored) {
 
                             }
@@ -150,7 +152,7 @@ class HbaseProcessor extends DefaultInvocationProcessor {
                     }
                 });
             }
-            getReq.put("row", Bytes.toString(row));
+            getReq.put("row", hBaseToString(row));
             getReq.put("familyMap", familyQualifierValueMap);
             return getReq;
         } catch (Exception e) {
@@ -158,4 +160,28 @@ class HbaseProcessor extends DefaultInvocationProcessor {
             return null;
         }
     }
+
+    private String hBaseToString(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        if (bytes.length == 0) {
+            return "";
+        }
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    private String hBaseToString(byte[] bytes, int offset, int length) {
+        Objects.requireNonNull(bytes, "bytes");
+        if (offset < 0 || length < 0 || offset > bytes.length - length) {
+            throw new IllegalArgumentException(
+                String.format("Invalid slice: offset=%d, length=%d, bytes.length=%d", offset, length, bytes.length)
+            );
+        }
+        if (length == 0) {
+            return "";
+        }
+        return new String(bytes, offset, length, StandardCharsets.UTF_8);
+    }
+
 }
